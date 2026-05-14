@@ -1,0 +1,187 @@
+{
+  "tools": [
+    {
+      "name": "search_tools",
+      "description": "Search StackSwap's catalog of ~400 GTM tools by name. Returns each match with its catalogued monthly cost and, when applicable, a StackSwap partner sign-up link.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Substring to match against tool names (case-insensitive). Omit to list top tools."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Max number of results to return."
+          }
+        }
+      }
+    },
+    {
+      "name": "find_overlaps",
+      "description": "Given a list of tool names in a user's stack, return the redundant pairs StackSwap has curated (104 hand-verified overlaps) along with monthly/annual savings if one is consolidated.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Tool names in the current stack (e.g. [\"HubSpot\", \"Salesforce\", \"Outreach\"])."
+          }
+        },
+        "required": [
+          "tools"
+        ]
+      }
+    },
+    {
+      "name": "suggest_swaps",
+      "description": "For each tool supplied, return StackSwap's AI-native replacement recommendation (when one exists) with annual savings and reasoning. Skews toward legacy \u2192 modern swaps (Outreach \u2192 Smartlead, ZoomInfo \u2192 Apollo, etc.).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Tool names to evaluate for AI-native replacements."
+          }
+        },
+        "required": [
+          "tools"
+        ]
+      }
+    },
+    {
+      "name": "scan_stack",
+      "description": "Run a preview StackScan: pass a list of tools + team size + industry, get back current spend, optimized spend, monthly/annual recoverable, and the top 5 replace/remove opportunities. Includes a link to the full paid audit on stackswap.ai.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Tool names in the user's current stack."
+          },
+          "teamSize": {
+            "type": "string",
+            "enum": [
+              "1-10",
+              "11-25",
+              "26-50",
+              "51-100",
+              "101-250",
+              "251+"
+            ],
+            "default": "11-25",
+            "description": "Team-size band. Defaults to 11-25 when omitted."
+          },
+          "industry": {
+            "type": "string",
+            "description": "Industry slug or label. Recognised slugs: b2b_saas, revenue_sales_tech, marketing_tech, revops_operations, real_estate_tech, fintech_financial, dev_tools_plg, hr_recruiting_tech, agency_consultancy, healthtech, edtech, other. Unknown values default to 'other'."
+          }
+        },
+        "required": [
+          "tools"
+        ]
+      }
+    },
+    {
+      "name": "recommend_partner",
+      "description": "Given a need (e.g. 'outbound', 'CRM', 'automation'), return StackSwap's recommended affiliate partner(s) with sign-up URL, positioning, and (when offered) a done-for-you implementation bundle priced at $250/hr.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "Category keyword or need description (e.g. \"outbound\", \"CRM for small team\", \"Zapier alternative\")."
+          }
+        },
+        "required": [
+          "category"
+        ]
+      }
+    },
+    {
+      "name": "compare_tools",
+      "description": "Head-to-head comparison of two GTM tools. Returns cost delta, AI-readiness scores, overlap status, swap-registry signal, and StackSwap's recommended pick with reasoning. Use when the user is choosing between two specific vendors (e.g. 'Salesforce vs HubSpot', 'Outreach vs Smartlead').",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "string",
+            "description": "First tool name (fuzzy-matched against catalog)."
+          },
+          "b": {
+            "type": "string",
+            "description": "Second tool name (fuzzy-matched against catalog)."
+          }
+        },
+        "required": [
+          "a",
+          "b"
+        ]
+      }
+    },
+    {
+      "name": "recommend_stack",
+      "description": "StackSwap's reference starter stack for a given industry vertical. Returns a curated tool list with per-tool cost, total monthly/annual spend, AI-readiness score, and partner sign-up links. Use for greenfield 'what stack should I buy?' queries \u2014 distinct from scan_stack (audits an existing stack) and recommend_partner (single category).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "industry": {
+            "type": "string",
+            "description": "Industry vertical. Recognised: 'SaaS / Tech', 'Marketing Agency', 'Finance / Fintech', 'Consulting'. Common slugs (b2b_saas, fintech, agency) and aliases also accepted; unknown values map to closest match."
+          },
+          "teamSize": {
+            "type": "string",
+            "enum": [
+              "1-10",
+              "11-25",
+              "26-50",
+              "51-100",
+              "101-250",
+              "251+"
+            ],
+            "default": "11-25",
+            "description": "Team-size band for cost modeling. Defaults to 11-25."
+          },
+          "budget": {
+            "type": "number",
+            "description": "Optional monthly budget cap in USD. If exceeded, the response flags the overage but does not auto-swap tools."
+          }
+        },
+        "required": [
+          "industry"
+        ]
+      }
+    },
+    {
+      "name": "get_tool_details",
+      "description": "Full StackSwap profile for a single tool: cost (catalog + per-seat with confidence), AI-readiness score, category, common overlaps, swap-registry status, partner link + done-for-you implementation bundle if applicable. Use when the user wants depth on one tool (more than search_tools' name + cost).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tool name (fuzzy-matched against catalog)."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    }
+  ]
+}
