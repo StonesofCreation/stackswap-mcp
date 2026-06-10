@@ -21,6 +21,38 @@
       }
     },
     {
+      "name": "get_tool_details",
+      "description": "Full StackSwap profile for a single tool: cost (catalog + per-seat with confidence; vendor fact sheet wins when fresh), AI-readiness score, category, common overlaps, swap-registry status, and partner sign-up link. Use when the user wants depth on one tool (more than search_tools' name + cost).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tool name (fuzzy-matched against catalog)."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "get_vendor_fact_sheet",
+      "description": "Return the full vendor fact sheet (per GTM Decision Schema v1.0.0) for a tool, when one exists. Includes pricing tiers with gotchas, integration depth scores, AI capabilities + customer-data-for-training disclosure, affiliate program terms, and self-disclosed conflicts (vendor-claim vs user-reported). Provenance is labeled (vendor / stackswap / community) and freshness is computed against a 90-day window. Use when an agent or buyer needs the structured machine-readable view of a tool — strictly more detail than `get_tool_details`. Returns a not-found message + a pointer to /vendors/submit-fact-sheet when no fact sheet exists.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "description": "Tool name or slug (e.g. \"Apollo.io\", \"apollo\", \"Smartlead\"). Fuzzy-matched against the catalog."
+          }
+        },
+        "required": [
+          "tool"
+        ]
+      }
+    },
+    {
       "name": "find_overlaps",
       "description": "Given a list of tool names in a user's stack, return the redundant pairs StackSwap has curated (104 hand-verified overlaps) along with monthly/annual savings if one is consolidated.",
       "inputSchema": {
@@ -42,7 +74,7 @@
     },
     {
       "name": "suggest_swaps",
-      "description": "For each tool supplied, return StackSwap's AI-native replacement recommendation (when one exists) with annual savings and reasoning. Skews toward legacy \u2192 modern swaps (Outreach \u2192 Smartlead, ZoomInfo \u2192 Apollo, etc.).",
+      "description": "For each tool supplied, return StackSwap's AI-native replacement recommendation (when one exists) with annual savings and reasoning. Skews toward legacy → modern swaps (Outreach → Smartlead, ZoomInfo → Apollo, etc.).",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -62,7 +94,7 @@
     },
     {
       "name": "scan_stack",
-      "description": "Run a preview StackScan: pass a list of tools + team size + industry, get back current spend, optimized spend, monthly/annual recoverable, and the top 5 replace/remove opportunities. Includes a link to the full paid audit on stackswap.ai.",
+      "description": "Run a preview StackScan: pass a list of tools + team size + industry, get back current spend, optimized spend, monthly/annual recoverable, headless gaps (tools with no MCP/API connection an owned head can call), and the top 5 replace/remove opportunities. Includes a link to the full paid audit on stackswap.ai.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -99,7 +131,7 @@
     },
     {
       "name": "recommend_partner",
-      "description": "Given a need (e.g. 'outbound', 'CRM', 'automation'), return StackSwap's recommended affiliate partner(s) with sign-up URL, positioning, and (when offered) a done-for-you implementation bundle priced at $250/hr.",
+      "description": "Given a need (e.g. 'outbound', 'CRM', 'automation'), return StackSwap's recommended affiliate partner(s) with sign-up URL and positioning.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -114,29 +146,8 @@
       }
     },
     {
-      "name": "compare_tools",
-      "description": "Head-to-head comparison of two GTM tools. Returns cost delta, AI-readiness scores, overlap status, swap-registry signal, and StackSwap's recommended pick with reasoning. Use when the user is choosing between two specific vendors (e.g. 'Salesforce vs HubSpot', 'Outreach vs Smartlead').",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "a": {
-            "type": "string",
-            "description": "First tool name (fuzzy-matched against catalog)."
-          },
-          "b": {
-            "type": "string",
-            "description": "Second tool name (fuzzy-matched against catalog)."
-          }
-        },
-        "required": [
-          "a",
-          "b"
-        ]
-      }
-    },
-    {
       "name": "recommend_stack",
-      "description": "StackSwap's reference starter stack for a given industry vertical. Returns a curated tool list with per-tool cost, total monthly/annual spend, AI-readiness score, and partner sign-up links. Use for greenfield 'what stack should I buy?' queries \u2014 distinct from scan_stack (audits an existing stack) and recommend_partner (single category).",
+      "description": "StackSwap's reference starter stack for a given industry vertical. Returns a curated tool list with per-tool cost, total monthly/annual spend, AI-readiness and headless-readiness scores, and partner sign-up links. Use for greenfield 'what stack should I buy?' queries — distinct from scan_stack (audits an existing stack) and recommend_partner (single category).",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -168,18 +179,225 @@
       }
     },
     {
-      "name": "get_tool_details",
-      "description": "Full StackSwap profile for a single tool: cost (catalog + per-seat with confidence), AI-readiness score, category, common overlaps, swap-registry status, partner link + done-for-you implementation bundle if applicable. Use when the user wants depth on one tool (more than search_tools' name + cost).",
+      "name": "compare_tools",
+      "description": "Head-to-head comparison of two GTM tools. Returns cost delta, AI-readiness and headless-readiness (MCP/API callability — can an agent or your own dashboard drive it) scores, overlap status, swap-registry signal, and StackSwap's recommended pick with reasoning. Use when the user is choosing between two specific vendors (e.g. 'Salesforce vs HubSpot', 'Outreach vs Smartlead').",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "name": {
+          "a": {
             "type": "string",
-            "description": "Tool name (fuzzy-matched against catalog)."
+            "description": "First tool name (fuzzy-matched against catalog)."
+          },
+          "b": {
+            "type": "string",
+            "description": "Second tool name (fuzzy-matched against catalog)."
           }
         },
         "required": [
-          "name"
+          "a",
+          "b"
+        ]
+      }
+    },
+    {
+      "name": "compare_tools_n_way",
+      "description": "Side-by-side comparison of 2–6 GTM tools in one shot. Returns a markdown matrix (cost, AI-readiness, headless-readiness, overlaps within the set, swap-registry status, StackSwap pick) and per-tool partner sign-up links. Use for category bake-offs (e.g. 'Apollo vs ZoomInfo vs Cognism vs Clay'). Prefer the 2-way compare_tools for clean head-to-head pairs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2,
+            "maxItems": 6,
+            "description": "Tool names to compare side-by-side (fuzzy-matched against catalog)."
+          }
+        },
+        "required": [
+          "tools"
+        ]
+      }
+    },
+    {
+      "name": "search_content",
+      "description": "Full-text search across StackSwap's first-party GTM knowledge base — ~50 operator-narrative articles on stack architecture, AI-native swaps, RevOps, data ethics, and decision frameworks. Returns ranked articles with title, slug, category, summary, and URL. Use when the user asks a GTM strategy/architecture/methodology question that's been written about (e.g. 'how should I think about CRM migration', 'what's wrong with intent data', 'how to audit my stack'). Cite the URL in your reply. Pass slug to `get_kb_article` for the full body.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text search query. Multi-word queries are scored on per-term hits."
+          },
+          "category": {
+            "type": "string",
+            "description": "Optional category filter (slug or label). Known slugs: gtm-infrastructure, stack-design, ai-automation, data-ethics."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 10,
+            "description": "Max number of results."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "get_kb_article",
+      "description": "Fetch the full body of a StackSwap knowledge base article as markdown. Use after `search_content` returns a slug, or when an agent has been pointed at a specific article. Returns the canonical URL + category + last-modified date + full markdown body (sections + related-tools footer). Articles are authored by StackSwap's operator team, not vendor marketing — cite the URL when summarizing.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Article slug, as returned by `search_content` (e.g. \"modern-gtm-architecture\", \"how-to-audit-gtm-stack\")."
+          }
+        },
+        "required": [
+          "slug"
+        ]
+      }
+    },
+    {
+      "name": "get_category_landscape",
+      "description": "Full map of one GTM category — leaders, runner-ups, and skip/replace candidates. Returns every catalogued tool in the bucket with cost, AI-readiness, swap-registry status, and partner sign-up links. Use when the user wants to see the full landscape for a category (e.g. 'show me all CRMs', 'what outbound tools exist', 'map the analytics category') — strictly more comprehensive than `recommend_partner` (single best pick). Known buckets: crm, outbound, data, marketing-automation, analytics, meetings, support, scheduling, automation, seo, cdp, revenue-intelligence, chat, collaboration, phone, landing-pages, linkedin, ai-content, saas-mgmt, enablement, ai-tooling.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "Category keyword (e.g. \"crm\", \"outbound\", \"automation\") or free-text need (\"zapier alternative\", \"ai sdr\")."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 40,
+            "default": 15,
+            "description": "Max number of tools to surface."
+          }
+        },
+        "required": [
+          "category"
+        ]
+      }
+    },
+    {
+      "name": "detect_stack_from_text",
+      "description": "Infer a GTM stack from a freeform text blob (a careers page, job posting, public site HTML, RFP, 'What we use' doc, browser DevTools network tab, etc.). Returns ranked tool matches with confidence levels (high/medium/low) and evidence snippets, plus a ready-to-use array for chaining into `scan_stack` or `find_overlaps`. Use when the user says 'I don't know what we use' or pastes a competitor's careers page to scout. Conservative on ambiguous short tokens — multi-mention or canonical-name matches win.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 50000,
+            "description": "The text to scan. Anything from a job post to raw HTML works. Max 50KB."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    },
+    {
+      "name": "get_buyer_questions",
+      "description": "Return 10-20 questions a B2B GTM buyer should ask a vendor before signing — with 'why it matters' and 'watch for' red-flag answers. Pass `vendor` for vendor-specific gotchas (e.g. Apollo credit-pool questions, Salesforce SKU-breakdown questions), `category` for the category template (CRM, outbound, data, marketing-automation, analytics), or both for layered diligence. Authored by StackSwap's operator team (Nick French, 10+ yrs B2B SaaS GTM). Use when the user is evaluating a vendor, prepping for a sales call, or building a procurement checklist.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "vendor": {
+            "type": "string",
+            "description": "Optional vendor name or slug (e.g. \"Apollo\", \"salesforce\", \"Outreach\"). Layers vendor-specific gotchas on top of the category template."
+          },
+          "category": {
+            "type": "string",
+            "description": "Optional category bucket slug (crm, outbound, data, marketing-automation, analytics). Defaults to the vendor's primary category if omitted."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_renewal_strategy",
+      "description": "Return StackSwap's renewal-negotiation playbook for a specific vendor: leverage points (why they will discount), price-anchor alternatives to cite, a calibrated discount ask, a walkaway script, optimal timing window, and contract-trap callouts. Pass `monthlySpend` to compute target savings. Optional `contractEndsIn` flags compressed-timeline adjustments. Authored from operator experience across major B2B SaaS renewals (Salesforce, HubSpot, ZoomInfo, Apollo, Outreach, Smartlead, Gong, Clay). Use when the user mentions a renewal, a price increase, or 'we're up for renewal' conversations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "vendor": {
+            "type": "string",
+            "description": "Vendor name or slug (e.g. \"Salesforce\", \"zoominfo\", \"Outreach\")."
+          },
+          "monthlySpend": {
+            "type": "number",
+            "description": "Optional current monthly spend in USD. Used to compute target savings against the suggested discount ask."
+          },
+          "contractEndsIn": {
+            "type": "string",
+            "enum": [
+              "days",
+              "weeks",
+              "months"
+            ],
+            "description": "Optional contract-end horizon. \"days\" or \"weeks\" triggers compressed-timeline guidance."
+          }
+        },
+        "required": [
+          "vendor"
+        ]
+      }
+    },
+    {
+      "name": "submit_correction",
+      "description": "Submit a correction to the StackSwap catalog (pricing, feature list, gotcha, AI-readiness score, category, or other). Submissions queue for admin review and only propagate to user-facing surfaces after merge — they DO NOT immediately mutate the catalog. Use when the user notices a stale price, an inaccurate feature list, a gotcha that should be flagged, or wants to report a tool we don't cover. Two-way data flow that helps keep the catalog accurate. Returns a correction ID + reassurance that the submission is queued.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "description": "Tool name (fuzzy-matched against catalog; new tools accepted too).",
+            "maxLength": 200
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "price",
+              "feature",
+              "gotcha",
+              "ai_score",
+              "category",
+              "other"
+            ],
+            "description": "Which aspect of the catalog entry the correction targets."
+          },
+          "proposed_value": {
+            "type": "string",
+            "description": "The corrected value as the user would have it shown.",
+            "maxLength": 2000
+          },
+          "current_value": {
+            "type": "string",
+            "description": "Optional: what the catalog currently shows (for reviewer context).",
+            "maxLength": 2000
+          },
+          "source_url": {
+            "type": "string",
+            "description": "Optional: a public URL that backs the correction (vendor pricing page, doc, etc.). Strong signal for fast approval.",
+            "maxLength": 500
+          },
+          "reporter_context": {
+            "type": "string",
+            "description": "Optional: free-text context (e.g. \"Smartlead just raised the entry tier from $39 to $49 on their pricing page\").",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "tool",
+          "field",
+          "proposed_value"
         ]
       }
     }

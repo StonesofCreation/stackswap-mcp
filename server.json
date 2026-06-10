@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.stonesofcreation/stackswap",
+  "title": "StackSwap",
+  "description": "B2B SaaS GTM stack intelligence: search ~400 tools, compare vendors, find overlaps, audit spend, get buyer questions and renewal playbooks.",
+  "version": "1.1.0",
+  "websiteUrl": "https://stackswap.ai/mcp",
+  "repository": {
+    "url": "https://github.com/StonesofCreation/stackswap-mcp",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://stackswap.ai/api/mcp"
+    }
+  ]
+}
