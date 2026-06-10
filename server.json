@@ -1,8 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.stonesofcreation/stackswap",
+  "name": "io.github.StonesofCreation/stackswap",
   "title": "StackSwap",
-  "description": "B2B SaaS GTM stack intelligence: search ~400 tools, compare vendors, find overlaps, audit spend, get buyer questions and renewal playbooks.",
+  "description": "B2B GTM stack intelligence: search ~400 tools, compare vendors, find overlaps, audit SaaS spend.",
   "version": "1.1.0",
   "websiteUrl": "https://stackswap.ai/mcp",
   "repository": {
