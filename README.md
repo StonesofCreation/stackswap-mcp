@@ -1,5 +1,7 @@
 # StackSwap MCP
 
+[![smithery badge](https://smithery.ai/badge/nicholasallenfrench/stackswap)](https://smithery.ai/servers/nicholasallenfrench/stackswap)
+
 A hosted [Model Context Protocol](https://modelcontextprotocol.io) server that gives AI clients access to [StackSwap](https://stackswap.ai)'s B2B SaaS GTM stack intelligence — tool catalog, vendor fact sheets, overlap detection, AI-native swap suggestions, stack audits, n-way comparisons, category landscapes, buyer questions, renewal-negotiation playbooks, and a full-text operator knowledge base.
 
 **Live endpoint:** `https://stackswap.ai/api/mcp`
